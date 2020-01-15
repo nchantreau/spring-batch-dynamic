@@ -13,22 +13,25 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import fr.nchantreau.dynamic.config.JobCreator;
+import fr.nchantreau.dynamic.config.JobConfigurer;
 
 @RestController
-@Import(JobCreator.class)
+@Import(JobConfigurer.class)
 public class BatchLauncher {
 	@Autowired
 	JobLauncher jobLauncher;
 
 	@Autowired
-	JobCreator jobCreator;
+	JobConfigurer jobConfigurer;
 
 	@GetMapping("/launchjob")
 	@ResponseBody
-	public String launch(@RequestParam Integer chunkSize, @RequestParam(defaultValue = "5") Integer throttleLimit) throws Exception {
+    public String launch(@RequestParam(defaultValue = "generatedJob") String jobName,
+        @RequestParam(defaultValue = "generatedStep") String stepName, 
+        @RequestParam Integer chunkSize,
+        @RequestParam(defaultValue = "5") Integer throttleLimit) throws Exception {
 
-		Job job = jobCreator.createJob(chunkSize, throttleLimit);
+        Job job = jobConfigurer.createJob(jobName, stepName, chunkSize, throttleLimit);
 		JobParameters jobParameters = new JobParametersBuilder().addLong("time", new Date().getTime()).toJobParameters();
 		jobLauncher.run(job, jobParameters);
 

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @EnableBatchProcessing
-public class JobCreator {
+public class JobConfigurer {
 
 	@Autowired
 	private StepBuilderFactory stepBuilderFactory;
@@ -25,14 +25,15 @@ public class JobCreator {
 	@Autowired
 	private MyChunkListener listener;
 
-	public Job createJob(int chunkSize, int throttleLimit) {
+    public Job createJob(String jobName, String stepName, int chunkSize, int throttleLimit) {
 		return jobBuilderFactory
-				.get("job")
+                .get(jobName)
 				.incrementer(new RunIdIncrementer())
 				.start(stepBuilderFactory
-						.get("step")
+                        .get(stepName)
 						.<String, String>chunk(chunkSize)
-						.reader(new ListItemReader<>(IntStream.range(1, 110).mapToObj(String::valueOf).collect(Collectors.toList())))
+                        .reader(new ListItemReader<>(
+                                IntStream.range(1, 10001).mapToObj(String::valueOf).collect(Collectors.toList())))
 						.writer(items -> {
 							for (String item : items) {
 								System.out.println(">> " + item);
